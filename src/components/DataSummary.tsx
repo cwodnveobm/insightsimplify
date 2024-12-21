@@ -11,20 +11,42 @@ interface DataSummaryProps {
   columns: string[];
 }
 
+interface BaseColumnStats {
+  name: string;
+  type: 'numeric' | 'categorical';
+  missing: number;
+  unique: number;
+}
+
+interface NumericColumnStats extends BaseColumnStats {
+  type: 'numeric';
+  min: number;
+  max: number;
+  mean: number;
+  median: number;
+  stdDev: number;
+}
+
+interface CategoricalColumnStats extends BaseColumnStats {
+  type: 'categorical';
+}
+
+type ColumnStats = NumericColumnStats | CategoricalColumnStats;
+
 const DataSummary: React.FC<DataSummaryProps> = ({ data, columns }) => {
-  const calculateSummary = () => {
-    const summary = columns.map(column => {
+  const calculateSummary = (): ColumnStats[] => {
+    return columns.map(column => {
       const values = data.map(row => row[column]);
       const numericValues = values.filter(v => !isNaN(Number(v)));
       
-      const stats = {
+      const baseStats: BaseColumnStats = {
         name: column,
         type: numericValues.length === values.length ? 'numeric' : 'categorical',
         missing: values.filter(v => v === null || v === undefined || v === '').length,
         unique: new Set(values).size,
       };
 
-      if (stats.type === 'numeric') {
+      if (baseStats.type === 'numeric') {
         const sortedValues = numericValues.sort((a, b) => Number(a) - Number(b));
         const sum = numericValues.reduce((acc, val) => acc + Number(val), 0);
         const mean = sum / numericValues.length;
@@ -39,19 +61,21 @@ const DataSummary: React.FC<DataSummaryProps> = ({ data, columns }) => {
         const stdDev = Math.sqrt(avgSquareDiff);
 
         return {
-          ...stats,
-          min: Math.min(...numericValues),
-          max: Math.max(...numericValues),
-          mean: mean,
-          median: median,
-          stdDev: stdDev,
+          ...baseStats,
+          type: 'numeric' as const,
+          min: Math.min(...numericValues.map(Number)),
+          max: Math.max(...numericValues.map(Number)),
+          mean,
+          median,
+          stdDev,
         };
       }
 
-      return stats;
+      return {
+        ...baseStats,
+        type: 'categorical' as const,
+      };
     });
-
-    return summary;
   };
 
   const summary = calculateSummary();
@@ -83,23 +107,23 @@ const DataSummary: React.FC<DataSummaryProps> = ({ data, columns }) => {
                 <>
                   <div className="flex justify-between">
                     <dt className="text-sm text-gray-500">Min:</dt>
-                    <dd className="text-sm font-medium">{col.min?.toFixed(2)}</dd>
+                    <dd className="text-sm font-medium">{col.min.toFixed(2)}</dd>
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-sm text-gray-500">Max:</dt>
-                    <dd className="text-sm font-medium">{col.max?.toFixed(2)}</dd>
+                    <dd className="text-sm font-medium">{col.max.toFixed(2)}</dd>
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-sm text-gray-500">Mean:</dt>
-                    <dd className="text-sm font-medium">{col.mean?.toFixed(2)}</dd>
+                    <dd className="text-sm font-medium">{col.mean.toFixed(2)}</dd>
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-sm text-gray-500">Median:</dt>
-                    <dd className="text-sm font-medium">{col.median?.toFixed(2)}</dd>
+                    <dd className="text-sm font-medium">{col.median.toFixed(2)}</dd>
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-sm text-gray-500">Std Dev:</dt>
-                    <dd className="text-sm font-medium">{col.stdDev?.toFixed(2)}</dd>
+                    <dd className="text-sm font-medium">{col.stdDev.toFixed(2)}</dd>
                   </div>
                 </>
               )}
