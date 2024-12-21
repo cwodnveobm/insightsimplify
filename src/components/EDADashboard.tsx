@@ -2,20 +2,21 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  ChartBar, 
-  Table, 
-  FileDown, 
-  AlertTriangle, 
-  BarChart3, 
-  ScatterChart, 
+  BarChart3,
+  Table,
+  FileDown,
+  AlertTriangle,
+  ScatterChart,
   BoxSelect,
   Database,
   Filter,
   Search,
   Settings,
-  RefreshCw
+  RefreshCw,
+  Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import DataSummary from './DataSummary';
 import DataPreview from './DataPreview';
 import { MissingValuesAnalysis } from './MissingValuesAnalysis';
@@ -29,17 +30,23 @@ interface EDADashboardProps {
 
 const EDADashboard: React.FC<EDADashboardProps> = ({ data, columns }) => {
   const handleExport = () => {
-    const csvContent = "data:text/csv;charset=utf-8," + 
-      columns.join(",") + "\n" +
-      data.map(row => columns.map(col => row[col]).join(",")).join("\n");
-    
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "processed_data.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      const csvContent = "data:text/csv;charset=utf-8," + 
+        columns.join(",") + "\n" +
+        data.map(row => columns.map(col => row[col]).join(",")).join("\n");
+      
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "processed_data.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success("Data exported successfully!");
+    } catch (error) {
+      toast.error("Failed to export data. Please try again.");
+    }
   };
 
   return (
@@ -61,7 +68,7 @@ const EDADashboard: React.FC<EDADashboardProps> = ({ data, columns }) => {
             Settings
           </Button>
           <Button onClick={handleExport} className="flex items-center gap-2">
-            <FileDown className="h-4 w-4" />
+            <Download className="h-4 w-4" />
             Export Data
           </Button>
         </div>
@@ -125,7 +132,14 @@ const EDADashboard: React.FC<EDADashboardProps> = ({ data, columns }) => {
         </TabsContent>
 
         <TabsContent value="preview" className="space-y-4">
-          <DataPreview data={data} columns={columns} />
+          <Card>
+            <CardHeader>
+              <CardTitle>Data Preview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DataPreview data={data} columns={columns} />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
