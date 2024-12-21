@@ -35,36 +35,45 @@ type ColumnStats = NumericColumnStats | CategoricalColumnStats;
 
 const DataSummary: React.FC<DataSummaryProps> = ({ data, columns }) => {
   const calculateSummary = (): ColumnStats[] => {
+    if (!data.length || !columns.length) {
+      return [];
+    }
+
     return columns.map(column => {
       const values = data.map(row => row[column]);
-      const numericValues = values.filter(v => !isNaN(Number(v)));
+      const numericValues = values
+        .filter(v => v !== null && v !== undefined && v !== '')
+        .filter(v => !isNaN(Number(v)))
+        .map(Number);
       
       const baseStats: BaseColumnStats = {
         name: column,
-        type: numericValues.length === values.length ? 'numeric' : 'categorical',
+        type: numericValues.length === values.filter(v => v !== null && v !== undefined && v !== '').length ? 'numeric' : 'categorical',
         missing: values.filter(v => v === null || v === undefined || v === '').length,
-        unique: new Set(values).size,
+        unique: new Set(values.filter(v => v !== null && v !== undefined && v !== '')).size,
       };
 
-      if (baseStats.type === 'numeric') {
-        const sortedValues = numericValues.sort((a, b) => Number(a) - Number(b));
-        const sum = numericValues.reduce((acc, val) => acc + Number(val), 0);
-        const mean = sum / numericValues.length;
-        const median = sortedValues[Math.floor(sortedValues.length / 2)];
+      if (baseStats.type === 'numeric' && numericValues.length > 0) {
+        const sortedValues = [...numericValues].sort((a, b) => a - b);
+        const sum = numericValues.reduce((acc, val) => acc + val, 0);
+        const mean = numericValues.length ? sum / numericValues.length : 0;
+        const median = sortedValues.length % 2 === 0
+          ? (sortedValues[sortedValues.length / 2 - 1] + sortedValues[sortedValues.length / 2]) / 2
+          : sortedValues[Math.floor(sortedValues.length / 2)];
         
-        // Calculate standard deviation
+        // Calculate standard deviation with safeguards
         const squareDiffs = numericValues.map(value => {
-          const diff = Number(value) - mean;
+          const diff = value - mean;
           return diff * diff;
         });
-        const avgSquareDiff = squareDiffs.reduce((acc, val) => acc + val, 0) / numericValues.length;
+        const avgSquareDiff = squareDiffs.length ? squareDiffs.reduce((acc, val) => acc + val, 0) / squareDiffs.length : 0;
         const stdDev = Math.sqrt(avgSquareDiff);
 
         return {
           ...baseStats,
           type: 'numeric' as const,
-          min: Math.min(...numericValues.map(Number)),
-          max: Math.max(...numericValues.map(Number)),
+          min: Math.min(...numericValues),
+          max: Math.max(...numericValues),
           mean,
           median,
           stdDev,
@@ -79,6 +88,16 @@ const DataSummary: React.FC<DataSummaryProps> = ({ data, columns }) => {
   };
 
   const summary = calculateSummary();
+
+  if (!summary.length) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <p className="text-center text-gray-500">No data available for analysis</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fadeIn">
