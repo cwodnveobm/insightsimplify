@@ -1,7 +1,20 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChartBar, Table, FileDown, AlertTriangle, BarChart3, ScatterChart, BoxSelect } from "lucide-react";
+import { 
+  ChartBar, 
+  Table, 
+  FileDown, 
+  AlertTriangle, 
+  BarChart3, 
+  ScatterChart, 
+  BoxSelect,
+  Database,
+  Filter,
+  Search,
+  Settings,
+  RefreshCw
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DataSummary from './DataSummary';
 import DataPreview from './DataPreview';
@@ -32,12 +45,42 @@ const EDADashboard: React.FC<EDADashboardProps> = ({ data, columns }) => {
   return (
     <div className="space-y-6 p-4 animate-fadeIn">
       <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold text-insight-800 dark:text-insight-200">
-          Exploratory Data Analysis
-        </h2>
-        <Button onClick={handleExport} className="flex items-center gap-2">
-          <FileDown className="h-4 w-4" />
-          Export Data
+        <div className="flex items-center gap-2">
+          <Database className="h-6 w-6 text-insight-600" />
+          <h2 className="text-3xl font-bold text-insight-800 dark:text-insight-200">
+            Exploratory Data Analysis
+          </h2>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" className="flex items-center gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+          <Button variant="outline" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Settings
+          </Button>
+          <Button onClick={handleExport} className="flex items-center gap-2">
+            <FileDown className="h-4 w-4" />
+            Export Data
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex gap-4 mb-4">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search in dataset..."
+              className="w-full pl-10 pr-4 py-2 border rounded-md"
+            />
+          </div>
+        </div>
+        <Button variant="outline" className="flex items-center gap-2">
+          <Filter className="h-4 w-4" />
+          Filters
         </Button>
       </div>
 
