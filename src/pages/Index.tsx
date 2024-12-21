@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import FileUpload from '@/components/FileUpload';
-import DataPreview from '@/components/DataPreview';
-import DataSummary from '@/components/DataSummary';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import EDADashboard from '@/components/EDADashboard';
 import Papa from 'papaparse';
 
 const Index = () => {
@@ -33,20 +31,7 @@ const Index = () => {
             <FileUpload onFileUpload={handleFileUpload} />
           </div>
         ) : (
-          <Tabs defaultValue="preview" className="space-y-8">
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
-              <TabsTrigger value="preview">Data Preview</TabsTrigger>
-              <TabsTrigger value="summary">Data Summary</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="preview" className="animate-fadeIn">
-              <DataPreview data={data} columns={columns} />
-            </TabsContent>
-            
-            <TabsContent value="summary" className="animate-fadeIn">
-              <DataSummary data={data} columns={columns} />
-            </TabsContent>
-          </Tabs>
+          <EDADashboard data={data} columns={columns} />
         )}
       </div>
     </div>
